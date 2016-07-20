@@ -332,8 +332,12 @@ class TrigramPostgresSearchBackend(PostgresSearchBackend):
 
     def do_search(self, engine_slug, queryset, search_text):
         """Performs the full text search."""
+
+        cursor = connection.cursor()
+        cursor.execute("SELECT set_limit(0.2)")
+
         return queryset.extra(
-            where=("content <-> %s > 0.5",),
+            where=("content %% %s",),
             params=(self.escape_postgres_query(search_text),),
         )
 
