@@ -334,7 +334,7 @@ class TrigramPostgresSearchBackend(PostgresSearchBackend):
         """Performs the full text search."""
 
         cursor = connection.cursor()
-        cursor.execute("SELECT set_limit(0.2)")
+        cursor.execute("SELECT set_limit(0.1)")
 
         return queryset.extra(
             where=("content %% %s",),
@@ -348,13 +348,15 @@ class TrigramPostgresSearchBackend(PostgresSearchBackend):
                 "watson_rank": "watson_searchentry.content <-> %s"
             },
             select_params=(self.escape_postgres_query(search_text),),
-            order_by=("-watson_rank",),
+            order_by=("watson_rank",),
         )
 
     def do_filter(self, engine_slug, queryset, search_text):
         """Performs the full text filter."""
         model = queryset.model
         content_type = ContentType.objects.get_for_model(model)
+        cursor = connection.cursor()
+        cursor.execute("SELECT set_limit(0.1)")
         pk = model._meta.pk
         if has_int_pk(model):
             ref_name = "object_id_int"
@@ -382,7 +384,7 @@ class TrigramPostgresSearchBackend(PostgresSearchBackend):
                 "watson_rank": "watson_searchentry.content <-> %s"
             },
             select_params=(self.escape_postgres_query(search_text),),
-            order_by=("-watson_rank",),
+            order_by=("watson_rank",),
         )
 
     def escape_postgres_query(self, text):
